@@ -14,7 +14,7 @@ import sunburnt, json, argparse, httplib2, getopt
 
 '''
 Purpose:: To extract just the page meta data Abstract, keywords, Acknowledgements, & section after Intro (Methodology/ Data) if available
-            from AGU site.   
+            from AGU site. 
 '''
 class scrapeJournal(object): 
     def __init__(self,solrIntegration):
@@ -30,7 +30,7 @@ class scrapeJournal(object):
         self.f = open(self.log,'ab+')
         h = httplib2.Http(cache="/var/tmp/solr_cache")
         s = os.getcwd()+'/scored.xml'
-        self.solr = sunburnt.SolrInterface(url='http://localhost:8983/solr/scored', http_connection=h, schemadoc=s)
+        self.solr = sunburnt.SolrInterface(url='http://localhost:8983/solr/#/~cores/scored', http_connection=h, schemadoc=s)
 
     def is_element_present(self, how, what):
         try: self.driver.find_element(by=how, value=what)
@@ -63,8 +63,9 @@ class scrapeJournal(object):
              Purpose:: to get the journal link for each journal on AGU homepage
         '''
         driver = self.driver
+
         driver.get(self.base_url)
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(3)
         time.sleep(3)
 
         allJournals = driver.find_elements_by_xpath("//div[@class='content-area']/div/div/div/ul/li")
@@ -88,11 +89,11 @@ class scrapeJournal(object):
         allIssuesURLs = []
         journal = webdriver.PhantomJS()
         journal.get(journalPageUrl)
-        time.sleep(3)
+        time.sleep(5)
 
         journal.find_element_by_link_text("All Issues").click()
         journal.implicitly_wait(3)
-        time.sleep(3)
+        time.sleep(5)
         
         allIssues = journal.find_elements_by_xpath("//ol[contains(@class,'js-issues-volume-list')]/li")
         for issue in allIssues:
@@ -256,8 +257,8 @@ def main(argv):
     if solrIntegration == True:
         ps = subprocess.Popen("ps -ef | grep solr | grep start | grep -v grep", shell=True, stdout=subprocess.PIPE).communicate()[0]
         if ps:
-            print 'Solr database is already running ... PID is %s' %(ps.split(' ')[2])
-            journalsList.f.write('Solr database is already running ... PID is %s\n' %(ps.split(' ')[2]))
+            print 'Solr database is already running.'
+            journalsList.f.write('Solr database is already running')
 
             # # kill the process?
             # os.kill(int(ps.split(' ')[1]), signal.SIGKILL)
